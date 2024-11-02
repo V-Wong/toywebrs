@@ -1,8 +1,12 @@
+mod request;
+
 use std::{
     fs,
-    io::{BufRead, BufReader, Write},
+    io::{Read, Write},
     net::{TcpListener, TcpStream},
 };
+
+use request::Method;
 
 fn main() {
     let listener = TcpListener::bind("localhost:8080").unwrap();
@@ -14,10 +18,9 @@ fn main() {
 }
 
 fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&mut stream);
-    let request_line = buf_reader.lines().next().unwrap().unwrap();
+    let request = request::Request::try_from(&mut stream as &mut dyn Read).unwrap();
 
-    if request_line == "GET / HTTP/1.1" {
+    if request.method == Method::GET && request.path == "/" {
         let status_line = "HTTP/1.1 200 OK";
         let contents = fs::read_to_string("assets/hello.html").unwrap();
         let length = contents.len();
