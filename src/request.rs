@@ -28,32 +28,31 @@ impl TryFrom<&mut dyn Read> for Request {
             .take_while(|line| !line.is_empty());
 
         let request_line = lines.next().ok_or(RequestParsingError::NoRequestLine)?;
-        let request_line_components: Vec<&str> =
-            request_line.split_whitespace().collect::<Vec<_>>();
-
-        if request_line_components.len() != 3 {
-            return Err(RequestParsingError::InvalidRequestLine);
-        }
-
-        let method = Method::try_from(*request_line_components.get(0).unwrap())
+        let mut request_line_components = request_line.split_whitespace();
+        let method = request_line_components
+            .next()
+            .map(Method::try_from)
+            .ok_or(RequestParsingError::InvalidRequestLine)?
             .map_err(|_| RequestParsingError::InvalidRequestLine)?;
-        let path = request_line_components.get(1).unwrap().to_string();
+        let path = request_line_components
+            .next()
+            .ok_or(RequestParsingError::InvalidRequestLine)?;
 
         let mut headers = HashMap::new();
         for header in lines.into_iter() {
-            let header_components = header.split(":").collect::<Vec<_>>();
-            let key = *header_components
-                .get(0)
+            let mut header_components = header.split(":");
+            let key = header_components
+                .next()
                 .ok_or(RequestParsingError::InvalidHeader)?;
-            let value = *header_components
-                .get(1)
+            let value = header_components
+                .next()
                 .ok_or(RequestParsingError::InvalidHeader)?;
             headers.insert(key.to_string(), value.to_string());
         }
 
         Ok(Request {
             method,
-            path,
+            path: path.to_string(),
             headers,
         })
     }
