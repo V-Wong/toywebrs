@@ -1,6 +1,8 @@
 mod request;
+mod response;
 
 use std::{
+    collections::HashMap,
     fs,
     io::{Read, Write},
     net::{TcpListener, TcpStream},
@@ -21,24 +23,30 @@ fn handle_connection(mut stream: TcpStream) {
     let request = request::Request::try_from(&mut stream as &mut dyn Read).unwrap();
 
     if request.method == Method::GET && request.path == "/" {
-        let status_line = "HTTP/1.1 200 OK";
         let contents = fs::read_to_string("assets/hello.html").unwrap();
         let length = contents.len();
 
+        let response = response::Response {
+            status: response::Status::Ok,
+            headers: HashMap::from([("Content-Length".into(), length.to_string())]),
+            body: Some(contents),
+        };
+
         stream
-            .write_all(
-                format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}").as_bytes(),
-            )
+            .write_all(String::from(&response).as_bytes())
             .unwrap();
     } else {
-        let status_line = "HTTP/1.1 404 NOT FOUND";
         let contents = fs::read_to_string("assets/404.html").unwrap();
         let length = contents.len();
 
+        let response = response::Response {
+            status: response::Status::NotFound,
+            headers: HashMap::from([("Content-Length".into(), length.to_string())]),
+            body: Some(contents),
+        };
+
         stream
-            .write_all(
-                format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}").as_bytes(),
-            )
+            .write_all(String::from(&response).as_bytes())
             .unwrap();
     }
 }
