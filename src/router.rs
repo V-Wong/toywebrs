@@ -24,10 +24,11 @@ impl Router {
 
     pub fn add_route(
         &mut self,
-        route: (Method, String),
+        method: Method,
+        path: &str,
         handler: fn(&request::Request) -> response::Response,
     ) -> &mut Self {
-        self.routes.insert(route, handler);
+        self.routes.insert((method, path.into()), handler);
         self
     }
 
