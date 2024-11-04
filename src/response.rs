@@ -6,8 +6,8 @@ pub struct Response {
     pub body: Option<String>,
 }
 
-impl From<&Response> for String {
-    fn from(response: &Response) -> Self {
+impl From<Response> for String {
+    fn from(response: Response) -> Self {
         let request_line = format!("HTTP/1.1 {}", String::from(&response.status));
         let header_lines = {
             let mut s = String::new();
@@ -18,7 +18,7 @@ impl From<&Response> for String {
         };
         format!(
             "{request_line}\r\n{header_lines}\r\n{}",
-            response.body.clone().unwrap_or("".to_string())
+            response.body.unwrap_or("".to_string())
         )
     }
 }

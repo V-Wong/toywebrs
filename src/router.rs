@@ -44,9 +44,7 @@ impl Router {
             response
                 .headers
                 .extend(generate_restricted_headers(&response));
-            stream
-                .write_all(String::from(&response).as_bytes())
-                .unwrap();
+            stream.write_all(String::from(response).as_bytes()).unwrap();
         }
     }
 }
