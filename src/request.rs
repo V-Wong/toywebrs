@@ -3,7 +3,7 @@ use std::{
     io::{BufRead, BufReader, Read},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Request {
     pub method: Method,
     pub path: String,
@@ -46,6 +46,7 @@ impl TryFrom<&mut dyn Read> for Request {
                 .ok_or(RequestParsingError::InvalidHeader)?;
             let value = header_components
                 .next()
+                .and_then(|val| val.strip_prefix(' '))
                 .ok_or(RequestParsingError::InvalidHeader)?;
             headers.insert(key.to_string(), value.to_string());
         }
@@ -71,5 +72,39 @@ impl TryFrom<&str> for Method {
             "GET" => Ok(Method::GET),
             _ => Err(()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn can_parse_get_request() {
+        let mut message = "GET /test.htm HTTP/1.1
+User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)
+Host: www.vwong.dev
+Accept-Language: en-uk
+Accept-Encoding: gzip, deflate
+Connection: Keep-Alive"
+            .as_bytes();
+
+        assert_eq!(
+            Request::try_from(&mut message as &mut dyn Read).unwrap(),
+            Request {
+                method: Method::GET,
+                path: "/test.htm".into(),
+                headers: HashMap::from([
+                    (
+                        "User-Agent".into(),
+                        "Mozilla/4.0 (compatible; MSIE5.01; Windows NT)".into()
+                    ),
+                    ("Host".into(), "www.vwong.dev".into()),
+                    ("Accept-Language".into(), "en-uk".into()),
+                    ("Accept-Encoding".into(), "gzip, deflate".into()),
+                    ("Connection".into(), "Keep-Alive".into())
+                ])
+            }
+        )
     }
 }
