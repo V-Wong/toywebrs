@@ -40,15 +40,10 @@ impl TryFrom<&mut dyn Read> for Request {
 
         let mut headers = HashMap::new();
         for header in lines.into_iter() {
-            let mut header_components = header.split(":");
-            let key = header_components
-                .next()
+            let (key, value) = header
+                .split_once(":")
                 .ok_or(RequestParsingError::InvalidHeader)?;
-            let value = header_components
-                .next()
-                .and_then(|val| val.strip_prefix(' '))
-                .ok_or(RequestParsingError::InvalidHeader)?;
-            headers.insert(key.to_string(), value.to_string());
+            headers.insert(key.to_string(), value.trim_start().to_string());
         }
 
         Ok(Request {
