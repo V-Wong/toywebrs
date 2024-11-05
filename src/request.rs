@@ -14,7 +14,6 @@ pub struct Request {
 pub enum RequestParsingError {
     NoRequestLine,
     InvalidRequestLine,
-    InvalidHeader,
 }
 
 impl TryFrom<&mut dyn Read> for Request {
@@ -38,13 +37,13 @@ impl TryFrom<&mut dyn Read> for Request {
             .next()
             .ok_or(RequestParsingError::InvalidRequestLine)?;
 
-        let mut headers = HashMap::new();
-        for header in lines.into_iter() {
-            let (key, value) = header
-                .split_once(":")
-                .ok_or(RequestParsingError::InvalidHeader)?;
-            headers.insert(key.to_string(), value.trim_start().to_string());
-        }
+        let headers = lines
+            .into_iter()
+            .flat_map(|header| {
+                let (key, value) = header.split_once(":")?;
+                Some((key.to_string(), value.trim_start().to_string()))
+            })
+            .collect();
 
         Ok(Request {
             method,
