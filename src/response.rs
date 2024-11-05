@@ -9,13 +9,11 @@ pub struct Response {
 impl From<Response> for String {
     fn from(response: Response) -> Self {
         let request_line = format!("HTTP/1.1 {}", String::from(&response.status));
-        let header_lines = {
-            let mut s = String::new();
-            for (key, value) in &response.headers {
-                s += &format!("{key}: {value}\r\n");
-            }
-            s
-        };
+        let header_lines = response
+            .headers
+            .iter()
+            .map(|(key, value)| format!("{key}: {value}\r\n"))
+            .collect::<String>();
         format!(
             "{request_line}\r\n{header_lines}\r\n{}",
             response.body.unwrap_or("".to_string())
