@@ -14,6 +14,7 @@ pub struct Request {
 pub enum RequestParsingError {
     NoRequestLine,
     InvalidRequestLine,
+    InvalidMethod,
 }
 
 impl TryFrom<&mut dyn Read> for Request {
@@ -32,7 +33,7 @@ impl TryFrom<&mut dyn Read> for Request {
             .next()
             .map(Method::try_from)
             .ok_or(RequestParsingError::InvalidRequestLine)?
-            .map_err(|_| RequestParsingError::InvalidRequestLine)?;
+            .map_err(|_| RequestParsingError::InvalidMethod)?;
         let path = request_line_components
             .next()
             .ok_or(RequestParsingError::InvalidRequestLine)?;
