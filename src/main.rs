@@ -1,9 +1,6 @@
 use std::{collections::HashMap, fs, net::TcpListener};
 
-use toywebrs::request::Method;
-use toywebrs::response::{Response, Status};
-use toywebrs::router::Router;
-use toywebrs::thread_pool::ThreadPool;
+use toywebrs::prelude::*;
 
 fn main() {
     let listener = TcpListener::bind("localhost:8080").unwrap();
