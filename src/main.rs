@@ -3,10 +3,11 @@ use std::{collections::HashMap, fs, net::TcpListener};
 use toywebrs::request::Method;
 use toywebrs::response::{Response, Status};
 use toywebrs::router::Router;
+use toywebrs::thread_pool::ThreadPool;
 
 fn main() {
     let listener = TcpListener::bind("localhost:8080").unwrap();
-    Router::new(listener)
+    Router::new(listener, ThreadPool::new(5))
         .add_route(Method::GET, "/", |_| Response {
             status: Status::Ok,
             headers: HashMap::new(),
