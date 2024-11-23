@@ -7,17 +7,20 @@ use std::{
 use crate::{
     request::{self, Method},
     response,
+    thread_pool::ThreadPool,
 };
 
 pub struct Router {
     listener: TcpListener,
+    thread_pool: ThreadPool,
     routes: HashMap<(Method, String), fn(&request::Request) -> response::Response>,
 }
 
 impl Router {
-    pub fn new(listener: TcpListener) -> Self {
+    pub fn new(listener: TcpListener, thread_pool: ThreadPool) -> Self {
         Self {
             listener,
+            thread_pool,
             routes: HashMap::new(),
         }
     }
@@ -39,12 +42,16 @@ impl Router {
             let handler = self
                 .routes
                 .get(&(request.method, request.path.clone()))
-                .unwrap();
-            let mut response = handler(&request);
-            response
-                .headers
-                .extend(generate_restricted_headers(&response));
-            stream.write_all(String::from(response).as_bytes()).unwrap();
+                .unwrap()
+                .clone();
+
+            self.thread_pool.exec(move || {
+                let mut response = handler(&request);
+                response
+                    .headers
+                    .extend(generate_restricted_headers(&response));
+                stream.write_all(String::from(response).as_bytes()).unwrap();
+            });
         }
     }
 }
