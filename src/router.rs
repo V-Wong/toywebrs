@@ -5,8 +5,8 @@ use std::{
 };
 
 use crate::{
-    request::{self, Method},
-    response,
+    http::request::{self, Method},
+    http::response,
     thread_pool::ThreadPool,
 };
 
