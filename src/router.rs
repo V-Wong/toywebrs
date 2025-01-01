@@ -47,23 +47,17 @@ impl Router {
 
             self.thread_pool.exec(move || {
                 let mut response = handler(&request);
-                response
-                    .headers
-                    .extend(generate_restricted_headers(&response));
+                response.headers.add(
+                    "Content-Length",
+                    &response
+                        .body
+                        .as_ref()
+                        .map(|body| body.len())
+                        .unwrap_or(0)
+                        .to_string(),
+                );
                 stream.write_all(String::from(response).as_bytes()).unwrap();
             });
         }
     }
-}
-
-fn generate_restricted_headers(response: &response::Response) -> HashMap<String, String> {
-    HashMap::from([(
-        "Content-Length".into(),
-        response
-            .body
-            .as_ref()
-            .map(|body| body.len())
-            .unwrap_or(0)
-            .to_string(),
-    )])
 }
