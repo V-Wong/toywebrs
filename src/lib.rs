@@ -5,7 +5,7 @@ pub mod prelude {
     pub use crate::thread_pool::ThreadPool;
 }
 
-pub mod request;
-pub mod response;
-pub mod router;
-pub mod thread_pool;
+mod request;
+mod response;
+mod router;
+mod thread_pool;
