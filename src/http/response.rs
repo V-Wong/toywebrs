@@ -1,19 +1,15 @@
-use std::collections::HashMap;
+use super::headers::Headers;
 
 pub struct Response {
     pub status: Status,
-    pub headers: HashMap<String, String>,
+    pub headers: Headers,
     pub body: Option<String>,
 }
 
 impl From<Response> for String {
     fn from(response: Response) -> Self {
         let request_line = format!("HTTP/1.1 {}", String::from(&response.status));
-        let header_lines = response
-            .headers
-            .iter()
-            .map(|(key, value)| format!("{key}: {value}\r\n"))
-            .collect::<String>();
+        let header_lines = response.headers.to_string();
         format!(
             "{request_line}\r\n{header_lines}\r\n{}",
             response.body.unwrap_or("".to_string())

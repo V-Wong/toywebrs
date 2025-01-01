@@ -1,13 +1,12 @@
-use std::{
-    collections::HashMap,
-    io::{BufRead, BufReader, Read},
-};
+use std::io::{BufRead, BufReader, Read};
+
+use super::headers::Headers;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Request {
     pub method: Method,
     pub path: String,
-    pub headers: HashMap<String, String>,
+    pub headers: Headers,
 }
 
 #[derive(Debug)]
@@ -38,18 +37,10 @@ impl TryFrom<&mut dyn Read> for Request {
             .next()
             .ok_or(RequestParsingError::InvalidRequestLine)?;
 
-        let headers = lines
-            .into_iter()
-            .flat_map(|header| {
-                let (key, value) = header.split_once(":")?;
-                Some((key.to_string(), value.trim_start().to_string()))
-            })
-            .collect();
-
         Ok(Request {
             method,
             path: path.to_string(),
-            headers,
+            headers: lines.collect(),
         })
     }
 }
@@ -72,6 +63,8 @@ impl TryFrom<&str> for Method {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
 
     #[test]
@@ -99,6 +92,7 @@ Connection: Keep-Alive"
                     ("Accept-Encoding".into(), "gzip, deflate".into()),
                     ("Connection".into(), "Keep-Alive".into())
                 ])
+                .into()
             }
         )
     }
