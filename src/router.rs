@@ -10,10 +10,12 @@ use crate::{
     thread_pool::ThreadPool,
 };
 
+type Handler = fn(&request::Request) -> response::Response;
+
 pub struct Router {
     listener: TcpListener,
     thread_pool: ThreadPool,
-    routes: HashMap<(Method, String), fn(&request::Request) -> response::Response>,
+    routes: HashMap<(Method, String), Handler>,
 }
 
 impl Router {
@@ -25,12 +27,7 @@ impl Router {
         }
     }
 
-    pub fn add_route(
-        &mut self,
-        method: Method,
-        path: &str,
-        handler: fn(&request::Request) -> response::Response,
-    ) -> &mut Self {
+    pub fn add_route(&mut self, method: Method, path: &str, handler: Handler) -> &mut Self {
         self.routes.insert((method, path.into()), handler);
         self
     }
