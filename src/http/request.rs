@@ -1,4 +1,7 @@
-use std::io::{BufRead, BufReader, Read};
+use std::{
+    io::{BufRead, BufReader, Read},
+    str::FromStr,
+};
 
 use super::headers::Headers;
 
@@ -30,7 +33,7 @@ impl TryFrom<&mut dyn Read> for Request {
         let mut request_line_components = request_line.split_whitespace();
         let method = request_line_components
             .next()
-            .map(Method::try_from)
+            .map(Method::from_str)
             .ok_or(RequestParsingError::InvalidRequestLine)?
             .map_err(|_| RequestParsingError::InvalidMethod)?;
         let path = request_line_components
@@ -50,11 +53,11 @@ pub enum Method {
     GET,
 }
 
-impl TryFrom<&str> for Method {
-    type Error = ();
+impl FromStr for Method {
+    type Err = ();
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        match value {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
             "GET" => Ok(Method::GET),
             _ => Err(()),
         }
