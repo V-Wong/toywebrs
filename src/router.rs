@@ -39,11 +39,10 @@ impl Router {
         for stream in self.listener.incoming() {
             let mut stream = stream.unwrap();
             let request = request::Request::try_from(&mut stream as &mut dyn Read).unwrap();
-            let handler = self
+            let handler = *self
                 .routes
                 .get(&(request.method, request.path.clone()))
-                .unwrap()
-                .clone();
+                .unwrap();
 
             self.thread_pool.exec(move || {
                 let mut response = handler(&request);
