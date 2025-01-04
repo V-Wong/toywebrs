@@ -51,9 +51,8 @@ impl FromStr for RequestLine {
         let mut request_line_components = s.split_whitespace();
         let method = request_line_components
             .next()
-            .map(Method::from_str)
             .ok_or(RequestParsingError::InvalidRequestLine)?
-            .map_err(|_| RequestParsingError::InvalidMethod)?;
+            .parse()?;
         let path = request_line_components
             .next()
             .ok_or(RequestParsingError::InvalidRequestLine)?
@@ -70,13 +69,13 @@ pub enum Method {
 }
 
 impl FromStr for Method {
-    type Err = ();
+    type Err = RequestParsingError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "GET" => Ok(Method::GET),
             "POST" => Ok(Method::POST),
-            _ => Err(()),
+            _ => Err(RequestParsingError::InvalidMethod),
         }
     }
 }
