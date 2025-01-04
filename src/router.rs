@@ -47,17 +47,22 @@ impl Router {
 
             self.thread_pool.exec(move || {
                 let mut response = handler(&request);
-                response.headers.add(
-                    "Content-Length",
-                    &response
-                        .body
-                        .as_ref()
-                        .map(|body| body.len())
-                        .unwrap_or(0)
-                        .to_string(),
-                );
+                compute_restricted_headers(&mut response);
                 stream.write_all(String::from(response).as_bytes()).unwrap();
             });
         }
     }
+}
+
+fn compute_restricted_headers(response: &mut response::Response) -> &response::Response {
+    response.headers.add(
+        "Content-Length",
+        &response
+            .body
+            .as_ref()
+            .map(|body| body.len())
+            .unwrap_or(0)
+            .to_string(),
+    );
+    response
 }
