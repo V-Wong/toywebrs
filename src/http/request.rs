@@ -23,8 +23,7 @@ impl TryFrom<&mut dyn Read> for Request {
     type Error = RequestParsingError;
 
     fn try_from(value: &mut dyn Read) -> Result<Self, RequestParsingError> {
-        let buf_reader = BufReader::new(value);
-        let mut lines = buf_reader
+        let mut lines = BufReader::new(value)
             .lines()
             .map(|result| result.unwrap())
             .take_while(|line| !line.is_empty());
