@@ -29,8 +29,26 @@ impl TryFrom<&mut dyn Read> for Request {
             .map(|result| result.unwrap())
             .take_while(|line| !line.is_empty());
 
-        let request_line = lines.next().ok_or(RequestParsingError::NoRequestLine)?;
-        let mut request_line_components = request_line.split_whitespace();
+        let RequestLine(method, path) = lines
+            .next()
+            .ok_or(RequestParsingError::NoRequestLine)?
+            .parse()?;
+
+        Ok(Request {
+            method,
+            path,
+            headers: lines.collect(),
+        })
+    }
+}
+
+struct RequestLine(Method, String);
+
+impl FromStr for RequestLine {
+    type Err = RequestParsingError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut request_line_components = s.split_whitespace();
         let method = request_line_components
             .next()
             .map(Method::from_str)
@@ -38,13 +56,10 @@ impl TryFrom<&mut dyn Read> for Request {
             .map_err(|_| RequestParsingError::InvalidMethod)?;
         let path = request_line_components
             .next()
-            .ok_or(RequestParsingError::InvalidRequestLine)?;
+            .ok_or(RequestParsingError::InvalidRequestLine)?
+            .to_string();
 
-        Ok(Request {
-            method,
-            path: path.to_string(),
-            headers: lines.collect(),
-        })
+        Ok(Self(method, path))
     }
 }
 
