@@ -43,12 +43,8 @@ impl FromIterator<String> for Headers {
 
 impl Display for Headers {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(
-            &self
-                .0
-                .iter()
-                .map(|(key, value)| format!("{key}: {value}{CRLF}"))
-                .collect::<String>(),
-        )
+        f.write_str(&self.0.iter().fold(String::new(), |acc, (key, value)| {
+            acc + &format!("{key}: {value}{CRLF}")
+        }))
     }
 }
