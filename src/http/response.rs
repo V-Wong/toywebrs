@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+use super::common::CRLF;
 use super::headers::Headers;
 
 pub struct Response {
@@ -13,7 +14,7 @@ impl From<Response> for String {
         let request_line = format!("HTTP/1.1 {}", response.status);
         let header_lines = response.headers.to_string();
         format!(
-            "{request_line}\r\n{header_lines}\r\n{}",
+            "{request_line}{CRLF}{header_lines}{CRLF}{}",
             response.body.unwrap_or("".to_string())
         )
     }

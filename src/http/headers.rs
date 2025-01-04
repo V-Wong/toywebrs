@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use super::common::CRLF;
+
 #[derive(Debug, Eq, PartialEq)]
 pub struct Headers(HashMap<String, String>);
 
@@ -37,7 +39,7 @@ impl ToString for Headers {
     fn to_string(&self) -> String {
         self.0
             .iter()
-            .map(|(key, value)| format!("{key}: {value}\r\n"))
+            .map(|(key, value)| format!("{key}: {value}{CRLF}"))
             .collect::<String>()
     }
 }
