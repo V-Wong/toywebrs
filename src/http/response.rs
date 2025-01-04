@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::headers::Headers;
 
 pub struct Response {
@@ -8,7 +10,7 @@ pub struct Response {
 
 impl From<Response> for String {
     fn from(response: Response) -> Self {
-        let request_line = format!("HTTP/1.1 {}", String::from(&response.status));
+        let request_line = format!("HTTP/1.1 {}", response.status);
         let header_lines = response.headers.to_string();
         format!(
             "{request_line}\r\n{header_lines}\r\n{}",
@@ -23,12 +25,11 @@ pub enum Status {
     NotFound = 404,
 }
 
-impl From<&Status> for String {
-    fn from(status: &Status) -> Self {
-        match status {
+impl Display for Status {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
             Status::Ok => "200 OK",
             Status::NotFound => "404 Not found",
-        }
-        .to_string()
+        })
     }
 }
