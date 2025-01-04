@@ -3,7 +3,7 @@ use std::{
     str::FromStr,
 };
 
-use super::headers::Headers;
+use super::{common::CRLF, headers::Headers};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Request {
@@ -34,10 +34,12 @@ impl TryFrom<&mut dyn Read> for Request {
             .ok_or(RequestParsingError::NoRequestLine)?
             .parse()?;
 
+        let headers = lines.by_ref().take_while(|line| line != CRLF).collect();
+
         Ok(Request {
             method,
             path,
-            headers: lines.collect(),
+            headers,
         })
     }
 }
