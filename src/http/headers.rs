@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use super::common::CRLF;
 
@@ -41,11 +41,14 @@ impl FromIterator<String> for Headers {
     }
 }
 
-impl ToString for Headers {
-    fn to_string(&self) -> String {
-        self.0
-            .iter()
-            .map(|(key, value)| format!("{key}: {value}{CRLF}"))
-            .collect::<String>()
+impl Display for Headers {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(
+            &self
+                .0
+                .iter()
+                .map(|(key, value)| format!("{key}: {value}{CRLF}"))
+                .collect::<String>(),
+        )
     }
 }
