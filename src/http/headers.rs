@@ -16,6 +16,12 @@ impl Headers {
     }
 }
 
+impl Default for Headers {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl From<HashMap<String, String>> for Headers {
     fn from(value: HashMap<String, String>) -> Self {
         Self(value)
