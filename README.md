@@ -7,20 +7,31 @@ A basic web framework for learning purposes. Built from the ground up with zero 
 
 ## Usage
 ```rs
-use std::{collections::HashMap, fs, net::TcpListener};
+use std::{fs, net::TcpListener};
 use toywebrs::prelude::*;
 
-let listener = TcpListener::bind("localhost:8080").unwrap();
-Router::new(listener, ThreadPool::new(5))
-    .add_route(Method::GET, "/", |_| Response {
-        status: Status::Ok,
-        headers: HashMap::new(),
-        body: Some(fs::read_to_string("assets/hello.html").unwrap()),
-    })
-    .add_route(Method::GET, "/other", |_| Response {
-        status: Status::NotFound,
-        headers: HashMap::new(),
-        body: Some(fs::read_to_string("assets/404.html").unwrap()),
-    })
-    .run();
+fn main() {
+    let listener = TcpListener::bind("localhost:8080").unwrap();
+    Router::new(listener, ThreadPool::new(5))
+        .add_route(Method::GET, "/", |_| Response {
+            status: Status::Ok,
+            headers: Headers::new(),
+            body: Some(fs::read_to_string("assets/hello.html").unwrap()),
+        })
+        .add_route(Method::GET, "/other", |_| Response {
+            status: Status::NotFound,
+            headers: Headers::new(),
+            body: Some(fs::read_to_string("assets/404.html").unwrap()),
+        })
+        .add_route(Method::POST, "/ping", |request| Response {
+            status: Status::Ok,
+            headers: Headers::new(),
+            body: request
+                .body
+                .clone()
+                .map(|body| format!("Your body: {body}"))
+                .or(Some("You didn't provide a body".to_owned())),
+        })
+        .run();
+}
 ```
