@@ -3,7 +3,7 @@ use std::{
     str::FromStr,
 };
 
-use super::{common::CRLF, headers::Headers};
+use super::headers::Headers;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Request {
@@ -104,6 +104,7 @@ impl FromStr for Method {
 mod tests {
     use std::collections::HashMap;
 
+    use super::super::common::CRLF;
     use super::*;
 
     #[test]
