@@ -14,6 +14,10 @@ impl Headers {
         self.0.insert(key.to_string(), value.to_string());
         self
     }
+
+    pub fn get(&self, key: &str) -> Option<&str> {
+        self.0.get(key).map(|s| s.as_str())
+    }
 }
 
 impl Default for Headers {

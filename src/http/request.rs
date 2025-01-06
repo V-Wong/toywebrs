@@ -18,20 +18,40 @@ pub enum RequestParsingError {
     NoRequestLine,
     InvalidRequestLine,
     InvalidMethod,
+    NoContentLength,
+    InvalidContentLength,
+    InvalidBody,
 }
 
 impl TryFrom<&mut dyn Read> for Request {
     type Error = RequestParsingError;
 
     fn try_from(value: &mut dyn Read) -> Result<Self, RequestParsingError> {
-        let mut lines = BufReader::new(value).lines().map(|result| result.unwrap());
+        let mut reader = BufReader::new(value);
+        let mut lines = reader.by_ref().lines().map(|result| result.unwrap());
 
         let RequestLine(method, path) = lines
             .next()
             .ok_or(RequestParsingError::NoRequestLine)?
             .parse()?;
-        let headers = lines.by_ref().take_while(|line| !line.is_empty()).collect();
-        let body = lines.reduce(|acc, line| acc + CRLF + &line);
+        let headers = lines
+            .by_ref()
+            .take_while(|line| !line.is_empty())
+            .collect::<Headers>();
+        let body = match headers
+            .get("Content-Length")
+            .map(|val| val.parse::<usize>())
+        {
+            Some(Ok(content_length)) => {
+                let mut buf = vec![0u8; content_length];
+                reader
+                    .read_exact(&mut buf)
+                    .map_err(|_| RequestParsingError::InvalidBody)?;
+                Some(String::from_utf8(buf).map_err(|_| RequestParsingError::InvalidBody)?)
+            }
+            Some(Err(_)) => return Err(RequestParsingError::InvalidContentLength),
+            None => None,
+        };
 
         Ok(Request {
             method,
@@ -127,8 +147,9 @@ Host: www.vwong.dev
 Accept-Language: en-uk
 Accept-Encoding: gzip, deflate
 Connection: Keep-Alive
+Content-Length: 33
 
-FIRST BODY LINE
+FIRST BODY LINE\r\n\
 SECOND BODY LINE"
             .as_bytes();
 
@@ -145,7 +166,8 @@ SECOND BODY LINE"
                     ("Host".into(), "www.vwong.dev".into()),
                     ("Accept-Language".into(), "en-uk".into()),
                     ("Accept-Encoding".into(), "gzip, deflate".into()),
-                    ("Connection".into(), "Keep-Alive".into())
+                    ("Connection".into(), "Keep-Alive".into()),
+                    ("Content-Length".into(), "33".into()),
                 ])
                 .into(),
                 body: Some(format!("FIRST BODY LINE{CRLF}SECOND BODY LINE"))
