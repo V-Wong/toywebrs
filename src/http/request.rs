@@ -86,6 +86,13 @@ impl FromStr for RequestLine {
 pub enum Method {
     GET,
     POST,
+    PUT,
+    DELETE,
+    PATCH,
+    HEAD,
+    OPTIONS,
+    TRACE,
+    CONNECT,
 }
 
 impl FromStr for Method {
@@ -95,6 +102,13 @@ impl FromStr for Method {
         match s {
             "GET" => Ok(Method::GET),
             "POST" => Ok(Method::POST),
+            "PUT" => Ok(Method::PUT),
+            "DELETE" => Ok(Method::DELETE),
+            "PATCH" => Ok(Method::PATCH),
+            "HEAD" => Ok(Method::HEAD),
+            "OPTIONS" => Ok(Method::OPTIONS),
+            "TRACE" => Ok(Method::TRACE),
+            "CONNECT" => Ok(Method::CONNECT),
             _ => Err(RequestParsingError::InvalidMethod),
         }
     }
